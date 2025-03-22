@@ -1,13 +1,35 @@
-require_relative '../repositories/base_repository'
+class MealRepository
+  def initialize(csv_filepath)
+    @csv_filepath = csv_filepath
+    @meals = []
+    @next_id = 1
 
-class MealRepository < BaseRepository
+    load_csv if File.exist?(@csv_filepath)
+  end
+
+  def all
+    @meals
+  end
+
+  def create(meal)
+    meal.id = @next_id
+    @meals << meal
+    @next_id += 1
+
+    save_csv
+  end
+
+  def find(meal_id)
+    @meals.find { |meal| meal.id == meal_id }
+  end
+
   private
 
   def save_csv
     CSV.open(@csv_filepath, 'wb') do |csv|
       csv << %w[id name price]
 
-      @elements.each do |meal|
+      @meals.each do |meal|
         csv << [meal.id, meal.name, meal.price]
       end
     end
@@ -20,9 +42,9 @@ class MealRepository < BaseRepository
 
       meal = Meal.new(row)
 
-      @elements << meal
+      @meals << meal
     end
 
-    @next_id = @elements.last.id + 1 unless @elements.empty?
+    @next_id = @meals.last.id + 1 unless @meals.empty?
   end
 end
